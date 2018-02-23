@@ -63,15 +63,18 @@ class CountryList {
     bindShowMoreBtnHandler(showMoreButton, index) {
         const i = index;
         showMoreButton.addEventListener("click", (e) => {
+            console.log("Index in", "bindShowMoreBtnHandler", i);
             this.onClickShowMoreBtn(e, i);
         });
     }
 
     //Handler on delete button click
     onClickShowMoreBtn(e, index) {
-        console.log("Cities in ", this.data[index].title, "are", this.data[index].cities);
+        const i = index;
         document.getElementById("cities-list-container").classList.toggle("hide");
-        this.renderCitiesList(index);
+        e.target.classList.toggle("change-color");
+        this.renderCitiesList(i); 
+        console.log("Index in", "onClickShowMoreBtn", i);        
     }
 
     //Add city to the cities list
@@ -81,26 +84,14 @@ class CountryList {
         this.citiesListRoot.appendChild(citiesListItem);
     }
 
-    //Render form to add cities 
-    renderAddCityForm() {
-        const addCityForm = document.createElement('form');
-        const addCityInput = document.createElement('input');
-        addCityInput.placeholder = "Add city to the country";
-        addCityInput.id = "city-input";
-        const addCitySubmit = document.createElement('input');
-        addCitySubmit.type = "submit";
-        addCitySubmit.style = "position: absolute; left: -9999px";
-        addCityForm.appendChild(addCityInput);
-        addCityForm.appendChild(addCitySubmit);
-        document.getElementById("cities-list-container").appendChild(addCityForm);
-    }
-
     //Bind submit handler to add city form
     bindAddCityHandler(index) {
         const i = index;
+        console.log("Index in", "bindAddCityHandler before validation", i); 
         document.getElementById("cities-list-container").addEventListener("submit", (e) => {
             e.preventDefault();
             if(this.validateForm("city-input")) {
+                console.log("Index in", "bindAddCityHandler after validation", i);
                 this.receiveInputCity(i);
                 this.cleanForm("city-input");
             }
@@ -109,9 +100,11 @@ class CountryList {
 
     //Receive input city from form
     receiveInputCity(index) {
+        const i = index;
+        console.log("Index in", "receiveInputCity", i); 
         const receivedCity = document.getElementById("city-input").value;
-        this.data[index].cities.push(receivedCity);
-        console.log(this.data[index].title, " cities:", this.data[index].cities);
+        this.data[i].cities.push(receivedCity);
+        console.log(this.data[i].title, " cities:", this.data[i].cities);
         this.addCity(receivedCity);
     }
 
@@ -120,7 +113,9 @@ class CountryList {
         document.getElementById("cities-list-container").innerHTML = "";
 
         this.renderAddCityForm();
-        this.bindAddCityHandler(index);
+        const i = index;
+        console.log("Index in", "renderCitiesList", i); 
+        this.bindAddCityHandler(i);
 
         this.citiesListRoot = document.createElement("ul");
         this.data[index].cities.forEach(this.addCity.bind(this));
@@ -142,6 +137,7 @@ class CountryList {
         showMoreBtn.appendChild(showMoreBtnValue);
 
         this.bindShowMoreBtnHandler(showMoreBtn, this.counter);
+        console.log("Index in", "addItem", this.counter); 
 
         listItem.appendChild(itemTitle);
         listItem.appendChild(showMoreBtn);
@@ -197,6 +193,20 @@ class CountryList {
     //Show form for the search
     toggleSearchForm() {
         document.getElementById("search-container").classList.toggle("hide");
+    }
+
+    //Render form to add cities 
+    renderAddCityForm() {
+        const addCityForm = document.createElement('form');
+        const addCityInput = document.createElement('input');
+        addCityInput.placeholder = "Add city to the country";
+        addCityInput.id = "city-input";
+        const addCitySubmit = document.createElement('input');
+        addCitySubmit.type = "submit";
+        addCitySubmit.style = "position: absolute; left: -9999px";
+        addCityForm.appendChild(addCityInput);
+        addCityForm.appendChild(addCitySubmit);
+        document.getElementById("cities-list-container").appendChild(addCityForm);
     }
 }
 

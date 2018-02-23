@@ -56,6 +56,9 @@
 .hide {
     display:none;
 }
+.change-color {
+    color:red;
+}
 
 #cities-list-container {
     margin-top: 200px;
@@ -63,5 +66,5 @@
 }
 
 #cities-list-container > ul > li {
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid rgb(0, 0, 0);
 }
