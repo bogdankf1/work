@@ -1,3 +1,13 @@
+
+
+//вывод городов не по клику, а по сабмиту просто
+//поиск с учетом регистра
+//counter обновлять в соответствии с количеством выведенных стран
+//не очищать форму после ввода запроса страны
+//сделать формы и плейсхолдеры более читаемыми
+
+
+
 class CountryList {
     
     //Constructor
@@ -72,7 +82,7 @@ class CountryList {
     onClickShowMoreBtn(e, index) {
         const i = index;
         document.getElementById("cities-list-container").classList.toggle("hide");
-        e.target.classList.toggle("change-color");
+        // e.target.classList.toggle("change-color");
         this.renderCitiesList(i); 
         console.log("Index in", "onClickShowMoreBtn", i);        
     }
