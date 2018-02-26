@@ -13,15 +13,9 @@
             <div id="header">
                 <h1>Country List</h1>
                 <div>
-                    <form id="add-form">
-                        <input id="add-input" type="text" placeholder="Which country do you want to add?">
-                        <input type="submit" style="position: absolute; left: -9999px"/>
-                    </form>
-                </div>
-                <div id="search-container" class="hide">
                     <form id="search-form">
-                        <input type="text" id="search-input" placeholder="Search any country">
-                        <input type="submit" style="position: absolute; left: -9999px" />
+                        <input id="search-input" type="text" placeholder="Which country do you want to search?">
+                        <input type="submit" style="position: absolute; left: -9999px"/>
                     </form>
                 </div>
             </div>
@@ -29,12 +23,12 @@
             <div class="filter-buttons">
                 <hr>
                 <div id="all">All</div>
-                <div id="search">Search</div>
                 <div id="number-of-items"></div>
             </div>
         </div>
-        <div id="cities-list-container" class="hide"></div> 
+        <div id="cities-list-container"></div> 
     </div>
+    <script src="src/eventEmitter.js"></script>
     <script src="src/main.js"></script>
 </body>
 </html>
