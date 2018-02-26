@@ -16,11 +16,14 @@
 }
 
 #list-container > ul > li {
-    display: inline-block;
     cursor: pointer;
-    width: 375px;
+    width: 400px;
     border-bottom: solid black 1px;
     overflow-x: hidden;
+}
+
+#list-container > ul > li:hover {
+    background-color: rgba(0, 0, 0, 0.164);
 }
 
 .showmore-btn {
