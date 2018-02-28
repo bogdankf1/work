@@ -1,3 +1,5 @@
+//манипуляции DOM-элементами заменить на манипуляции данными
+
 class Application {
     //Run application
     run(countries, cities) {
@@ -25,11 +27,13 @@ class Application {
     //Bind onclick handler to 'show all items' button
     bindAllItemsHandler() {
         document.getElementById('all').addEventListener('click', () => {
-            // this.cities.filter("show");
-            this.cities.filter("hide", "add", document.querySelector("#cities-list-container"));
-            // this.countries.filter("show");
+
+            this.cities.filter("hide", "add", document.querySelector("#cities-list-container")); 
+
             for(let i = 0; i < document.querySelector("#list-container > ul").children.length; i++) {
+
                 this.countries.filter("hide", "remove", document.querySelector("#list-container > ul").children[i]);
+
             }
             this.showNumberOfItems();
         });
@@ -46,14 +50,17 @@ class Application {
 
     //Handler on showmore click
     onClickShowCities(index) {
-        // this.cities.filter("show");
+
         this.cities.filter("hide", "remove", document.querySelector("#cities-list-container"));
 
-        for(let key in this.countries.data) {
-            if(this.countries.data[index].title == this.cities.data[key].country) {
-                this.cities.render(this.cities.data[key].cities);
+        const renderedItems = [];
+        for(let key in this.cities.data) {
+            if(this.countries.data[index].name === this.cities.data[key].country) {
+                console.log(this.cities.data[key]);
+                renderedItems.push(this.cities.data[key]);
             }
-        }        
+        }
+        this.cities.render(renderedItems);
     }
 
     //Validate form to enter correct values
@@ -86,14 +93,12 @@ class Application {
     searchItem() {
         const request = {};
         request.title = document.getElementById("search-input").value.toLowerCase();
-        // this.countries.filter("show");
         for(let key in this.countries.data) {
             this.countries.filter("hide", "remove", document.querySelector("#list-container > ul").children[key]);
 
-            const country = this.countries.data[key].title.toLowerCase();
+            const country = this.countries.data[key].name.toLowerCase();
             for(let j = 0; j < request.title.length; j++) {
                 if(!(request.title[j] == country[j])) {
-                    // this.countries.filter("show", this.countries.data[key]);
                     this.countries.filter("hide", "add", document.querySelector("#list-container > ul").children[key]);
                 }
             }
@@ -115,11 +120,7 @@ class List {
         this.domNode.innerHTML = "";
         this.listRoot = document.createElement('ul');
         for(let key in data) {
-            if(data[key].hasOwnProperty("visibility")) {
-               data[key].visibility === true && this.addItem(data[key]);
-            } else {
-                this.addItem(data[key]);
-            }
+            this.addItem(data[key]);
         }
         this.domNode.appendChild(this.listRoot);
     }
@@ -127,7 +128,7 @@ class List {
     //Add item to the list
     addItem(item) {
         const listItem = document.createElement("li");
-        listItem.innerHTML = item.hasOwnProperty("title") ? item.title : item;
+        listItem.innerHTML = item.hasOwnProperty("name") ? item.name : "";
         this.listRoot.appendChild(listItem);
     } 
     
@@ -140,27 +141,31 @@ class List {
 }
 
 //DATA
-const countriesData = [{title:"Ukraine"},
-                    {title:"Spain"}, 
-                    {title:"USA"},
-                    {title:"Italy"},
-                    {title:"France"},
-                    {title:"China"}];
+const countries = [{name:"Ukraine"}, {name:"Spain"}, {name:"USA"}, {name:"Italy"}, {name:"France"}, {name:"China"}];
 
-const citiesData = [{country:"Ukraine", cities:["Dnipro", "Kharkiv", "Kyjiw"]},
-                    {country:"Spain", cities:["Madrid", "Barcelona", "Seville"]},
-                    {country:"USA", cities:["Atlanta", "New York", "Washington", "Los Angeles"]},
-                    {country:"Italy", cities:["Rome", "Milan", "Florence", "Venice", "Turin"]},
-                    {country:"France", cities:["Paris", "Nice", "Marseille", "Lyon", "Nantes", "Lille"]},
-                    {country:"China", cities:["Guangzhou", "Shenzhen", "Tianjin", "Shanghai"]}];
+const cities = [{name:"Dnipro", country: "Ukraine"}, {name:"Kharkiv", country: "Ukraine"}, {name:"Kyjiw", country: "Ukraine"},
+                {name:"Madrid", country: "Spain"}, {name:"Barcelona", country: "Spain"}, {name:"Seville", country: "Spain"},
+                {name:"Atlanta", country: "USA"}, {name:"New York", country: "USA"}, {name:"Washington", country: "USA"}, {name:"Los Angeles", country: "USA"},
+                {name:"Rome", country: "Italy"}, {name:"Milan", country: "Italy"}, {name:"Florence", country: "Italy"}, {name:"Venice", country: "Italy"}, {name:"Turin", country: "Italy"},
+                {name:"Paris", country: "France"}, {name:"Nice", country: "France"}, {name:"Marseille", country: "France"}, {name:"Lyon", country: "France"}, {name:"Nantes", country: "France"}, {name:"Lille", country: "France"},
+                {name:"Guangzhou", country: "China"}, {name:"Shenzhen", country: "China"}, {name:"Tianjin", country: "China"}, {name:"Shanghai", country: "China"}];
+
+// const citiesData = [{country:"Ukraine", cities:["Dnipro", "Kharkiv", "Kyjiw"]},
+//                     {country:"Spain", cities:["Madrid", "Barcelona", "Seville"]},
+//                     {country:"USA", cities:["Atlanta", "New York", "Washington", "Los Angeles"]},
+//                     {country:"Italy", cities:["Rome", "Milan", "Florence", "Venice", "Turin"]},
+//                     {country:"France", cities:["Paris", "Nice", "Marseille", "Lyon", "Nantes", "Lille"]},
+//                     {country:"China", cities:["Guangzhou", "Shenzhen", "Tianjin", "Shanghai"]}];
 
 
 
-const cityListDestination = document.getElementById('cities-list-container');
-const countryListDestination = document.getElementById('list-container');
+const citiesListDestination = document.getElementById('cities-list-container');
+const countriesListDestination = document.getElementById('list-container');
 
-const Cities = new List(cityListDestination, citiesData);
-const Countries = new List(countryListDestination, countriesData);
+const CitiesList = new List(citiesListDestination, cities);
+const CountriesList = new List(countriesListDestination, countries);
 const App = new Application();
 
-App.run(Countries, Cities);
+CitiesList.render(cities.filter(city => city.country.match()));
+
+App.run(CountriesList, CitiesList);
