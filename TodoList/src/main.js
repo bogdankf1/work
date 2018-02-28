@@ -1,33 +1,60 @@
-window.ee = new EventEmitter();
-
-//сделать отдельный класс для взаимодействия списков
-//сделать два экземпляра класса List вместо двух отдельных классов
-//связать данные между собой при помощи - страна:набор городов
-//передавать данные как options
-
-class List {
-    //Constructor
-    constructor(domNode, options) {
-        this.domNode = domNode;
-        Object.assign(this, options);
+class Application {
+    //Run application
+    run(countries, cities) {
+        this.countries = countries;
+        this.cities = cities;
+        this.init();
     }
 
-    //Render full list
-    render() {
-        this.listRoot= document.createElement('ul');
-        this.data.forEach(this.addItem.bind(this));
-        this.domNode.appendChild(this.listRoot);
+    //Initialize all handlers
+    init() {
+        this.bindSearchFormHandler();
+        this.bindAllItemsHandler();
+        this.bindShowCitiesHandler();
+        this.showNumberOfItems();
     }
 
-    //Add item to the list
-    addItem(itemTitle) {
-        const item = document.createElement("li");
-        item.innerHTML = itemTitle;
-        this.listRoot.appendChild(item);
-        return item;
+    //Bind onsubmit handler to search form 
+    bindSearchFormHandler() {  
+        document.getElementById("search-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.validateForm("search-input") && this.searchItem();
+        });
     }
 
-    //***************** To class component ************
+    //Bind onclick handler to 'show all items' button
+    bindAllItemsHandler() {
+        document.getElementById('all').addEventListener('click', () => {
+            // this.cities.filter("show");
+            this.cities.filter("hide", "add", document.querySelector("#cities-list-container"));
+            // this.countries.filter("show");
+            for(let i = 0; i < document.querySelector("#list-container > ul").children.length; i++) {
+                this.countries.filter("hide", "remove", document.querySelector("#list-container > ul").children[i]);
+            }
+            this.showNumberOfItems();
+        });
+    }
+
+    //Bind on click handler to show cities
+    bindShowCitiesHandler() {
+        for(let i = 0; i < document.querySelector("#list-container > ul").children.length; i++) {
+            document.querySelector("#list-container > ul").children[i].addEventListener("click", () => {
+                this.onClickShowCities(i);
+            });
+        }
+    }
+
+    //Handler on showmore click
+    onClickShowCities(index) {
+        // this.cities.filter("show");
+        this.cities.filter("hide", "remove", document.querySelector("#cities-list-container"));
+
+        for(let key in this.countries.data) {
+            if(this.countries.data[index].title == this.cities.data[key].country) {
+                this.cities.render(this.cities.data[key].cities);
+            }
+        }        
+    }
 
     //Validate form to enter correct values
     validateForm(id) {
@@ -42,97 +69,12 @@ class List {
         return true;
     }
 
-    //Clean form from any values
-    cleanForm(id) {
-        document.getElementById(id).value = "";
-    }
-
-    //Remove hide class from list items
-    hideAllItems(selector) {
-        const dataItems = document.querySelector(selector).children;
-        for(let i = 0; i < dataItems.length; i++) {
-            dataItems[i].classList.remove("hide");
-        }
-    }
-
-    //Show all list items
-    showAllItems(selector) {
-        const allItems = document.querySelector(selector).children;
-        for(let i = 0; i < allItems.length; i++) {
-            allItems[i].classList.remove("hide");
-        }
-    }
-
-    //Hide cities list
-    hideCitiesList(id) {
-        document.getElementById(id).classList.add("hide");
-    }
-
-    //Show cities list
-    showCitiesList(id) {
-        document.getElementById(id).classList.remove("hide");
-    }
-}
-
-class CountryList extends List{
-    //Constructor
-    constructor(domNode) {
-        super();
-        this.counter = 0;
-        this.domNode = domNode;
-        this.data = [{title:"Ukraine"},
-                    {title:"Spain"}, 
-                    {title:"USA"},
-                    {title:"Italy"},
-                    {title:"France"}];
-        this.render();
-        this.init();
-    }
-
-    //Render full list
-    render(data){
-        super.render();
-        this.showNumberOfItems();
-    }
-
-    //Initialize all event handlers
-    init() {
-        document.getElementById('all').addEventListener('click', () => {
-            window.ee.emit("hide-cities-list");
-            this.showAllItems("#list-container > ul");
-            this.showNumberOfItems();
-        });
-
-        document.getElementById("search-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            if(this.validateForm("search-input")) {
-                this.searchItem();
-            }
-        });
-    }
-
-    //Add single item
-    addItem(todoItem) {
-        const listItem = super.addItem(todoItem.title);
-        this.bindShowCitiesHandler(listItem, this.counter);
-        this.counter++;
-    }
-
-    //Bind on click handler to show cities
-    bindShowCitiesHandler(listItem, index) {
-        listItem.addEventListener("click", (e) => {
-            window.ee.emit("show-cities-list", index, this.data[index].title);
-        });
-    }
-
     //Show number of items
     showNumberOfItems() {
         let itemsCounter = 0;
         const dataItems = document.querySelector("#list-container > ul").children;
-        for(let i = 0; i < this.data.length; i++) {
-            if(!dataItems[i].classList.contains("hide")) {
-                itemsCounter++;
-            }
+        for(let i = 0; i < dataItems.length; i++) {
+            !dataItems[i].classList.contains("hide") && itemsCounter++;
         }
         const message = document.createTextNode("Countries:" + itemsCounter),
               numOfItems = document.getElementById("number-of-items");
@@ -141,70 +83,84 @@ class CountryList extends List{
     }
 
     //Search country by the name
-    searchItem(countryName) {
-        this.hideAllItems("#list-container > ul");
+    searchItem() {
         const request = {};
-        const dataItems = document.querySelector("#list-container > ul").children;
         request.title = document.getElementById("search-input").value.toLowerCase();
-        for(let i = 0; i < this.data.length; i++) {
-            const country = this.data[i].title.toLowerCase();
-            for(let j = 0; j < request.title.length; j++) {
-                if(request.title[j] == country[j]) {
+        // this.countries.filter("show");
+        for(let key in this.countries.data) {
+            this.countries.filter("hide", "remove", document.querySelector("#list-container > ul").children[key]);
 
-                } else {
-                    dataItems[i].classList.add("hide");
+            const country = this.countries.data[key].title.toLowerCase();
+            for(let j = 0; j < request.title.length; j++) {
+                if(!(request.title[j] == country[j])) {
+                    // this.countries.filter("show", this.countries.data[key]);
+                    this.countries.filter("hide", "add", document.querySelector("#list-container > ul").children[key]);
                 }
             }
             this.showNumberOfItems();
         }
-    }    
+    }
 }
 
-class CityList extends List{
+class List {
     //Constructor
-    constructor(domNode) {
-        super();
+    constructor(domNode, options) {
         this.domNode = domNode;
-        this.citiesData = [["Dnipro", "Kharkiv", "Kyjiw"],
-                        ["Madrid", "Barcelona", "Seville"],
-                        ["Atlanta", "New York", "Washington", "Los Angeles"],
-                        ["Rome", "Milan", "Florence", "Venice", "Turin"],
-                        ["Paris", "Nice", "Marseille", "Lyon", "Nantes", "Lille"]];
-        this.init();
+        this.data = Object.assign({}, options);
+        this.render(this.data);
     }
 
-    //Render cities list
-    render(index, country) {
+    //Render full list
+    render(data) {
         this.domNode.innerHTML = "";
-        const citiesHeader = document.createElement("h4");
-        citiesHeader.innerHTML = `${country} cities:`;
-
-        this.listRoot = document.createElement("ul");
-        this.citiesData[index].forEach(this.addItem.bind(this));
-        this.domNode.appendChild(citiesHeader);
+        this.listRoot = document.createElement('ul');
+        for(let key in data) {
+            if(data[key].hasOwnProperty("visibility")) {
+               data[key].visibility === true && this.addItem(data[key]);
+            } else {
+                this.addItem(data[key]);
+            }
+        }
         this.domNode.appendChild(this.listRoot);
     }
 
-    //Initialize all event handlers
-    init() {
-        window.ee.addListener("show-cities-list", (i, countryTitle) => {
-            this.onClickShowCities(i, countryTitle);
-        });
-
-        window.ee.addListener("hide-cities-list", () => {
-            this.hideCitiesList("cities-list-container");
-        });
-    }
-
-    //Handler on delete button click
-    onClickShowCities(index, countryTitle) {
-        this.showCitiesList("cities-list-container");
-        this.render(index, countryTitle);        
+    //Add item to the list
+    addItem(item) {
+        const listItem = document.createElement("li");
+        listItem.innerHTML = item.hasOwnProperty("title") ? item.title : item;
+        this.listRoot.appendChild(listItem);
+    } 
+    
+    //Filter list items 
+    filter(className, action, domItem) {
+        action === "remove" ? 
+        domItem.classList.remove(className) :
+        domItem.classList.add(className);
     }
 }
 
-const cityListDestination = document.getElementById('cities-list-container');
-const Cities = new CityList(cityListDestination, {});
+//DATA
+const countriesData = [{title:"Ukraine"},
+                    {title:"Spain"}, 
+                    {title:"USA"},
+                    {title:"Italy"},
+                    {title:"France"},
+                    {title:"China"}];
 
+const citiesData = [{country:"Ukraine", cities:["Dnipro", "Kharkiv", "Kyjiw"]},
+                    {country:"Spain", cities:["Madrid", "Barcelona", "Seville"]},
+                    {country:"USA", cities:["Atlanta", "New York", "Washington", "Los Angeles"]},
+                    {country:"Italy", cities:["Rome", "Milan", "Florence", "Venice", "Turin"]},
+                    {country:"France", cities:["Paris", "Nice", "Marseille", "Lyon", "Nantes", "Lille"]},
+                    {country:"China", cities:["Guangzhou", "Shenzhen", "Tianjin", "Shanghai"]}];
+
+
+
+const cityListDestination = document.getElementById('cities-list-container');
 const countryListDestination = document.getElementById('list-container');
-const Countries = new CountryList(countryListDestination, {});
+
+const Cities = new List(cityListDestination, citiesData);
+const Countries = new List(countryListDestination, countriesData);
+const App = new Application();
+
+App.run(Countries, Cities);

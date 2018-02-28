@@ -118,3 +118,20 @@ document.getElementById('active').addEventListener('click', function() {
         }
     }
 });
+
+
+///////////
+//filter(action, listItem) {
+    //     if(!listItem) {
+    //         // console.log("listItem:", listItem);
+    //         for(let key in this.data){
+    //             this.data[key].visibility = action === "show" ? true : false; 
+    //         }
+    //         this.render(this.data);
+    //     } else {
+    //         console.log("listItem:", listItem);
+    //         listItem.visibility = action === "show" ? true : false;
+    //         console.log("listItem:", listItem);
+    //         this.render(listItem);
+    //     }
+    // }
