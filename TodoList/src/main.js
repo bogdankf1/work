@@ -1,14 +1,9 @@
-// 1 - пофиксить баг с неправильным соответствием страны - городов
-// 2 - showNumberOfItems - убрать манипуляции с DOM
-// 3 - при поиске - найденная страна при клике открывает не те города,
-// что ей принадлежат(открывает из this.cities.data, которые не меняются)
-// 4 - по возможности - все манипуляции с данными объединить в функции filter
-
 class Application {
     //Run application
     run(countries, cities) {
         this.countries = countries
         this.cities = cities
+        this.countries.render(this.countries.data)
         this.init()
     }
 
@@ -31,31 +26,26 @@ class Application {
     //Bind onclick handler to 'show all items' button
     bindAllItemsHandler() {
         document.getElementById('all').addEventListener('click', () => {
-            const renderItems = []
-            for(let key in this.countries.data) {
-                renderItems.push(this.countries.data[key])
-            }
-            this.countries.render(renderItems)
-            this.init()
+            this.cleanForm("search-input")
+            this.countries.render(this.countries.filter(true))
+            this.cities.render()
             this.showNumberOfItems()
         })
     }
 
     //Bind on click handler to show cities
     bindShowCitiesHandler() {
-        for(let i = 0; i < document.querySelector("#list-container > ul").children.length; i++) {
-            document.querySelector("#list-container > ul").children[i].addEventListener("click", () => {
-                this.onClickShowCities(i)
-            })
-        }
+        document.getElementById("list-container").addEventListener("click", (e) => {
+            e.target.tagName === "LI" && this.onClickShowCities(e.target.getAttribute("index"))
+        })
     }
 
     //Handler on showmore click
     onClickShowCities(index) {
+        const receivedCountries = this.searchItem() || this.countries.data
         const renderItems = []
         for(const key in this.cities.data) {
-            if(this.countries.data[index].name === this.cities.data[key].country) {
-                console.log("Cities", this.cities.data[key])
+            if(receivedCountries[index].name === this.cities.data[key].country) {
                 renderItems.push(this.cities.data[key])
             }
         }
@@ -69,19 +59,17 @@ class Application {
                 this.value = ''
             }
         }
-        if(!document.getElementById(id).value) {
-            return false
-        }
-        return true
+        return !document.getElementById(id).value ? false : true 
     }
     
+    //Clean form
+    cleanForm(id) {
+        document.getElementById(id).value = ""
+    }
+
     //Show number of items
-    showNumberOfItems() {
-        let itemsCounter = 0
-        const dataItems = document.querySelector("#list-container > ul").children
-        for(let i = 0; i < dataItems.length; i++) {
-            !dataItems[i].classList.contains("hide") && itemsCounter++
-        }
+    showNumberOfItems(renderedItems) {
+        const itemsCounter = renderedItems ? renderedItems.length : Object.keys(this.countries.data).length
         const message = document.createTextNode("Countries:" + itemsCounter),
               numOfItems = document.getElementById("number-of-items")
         numOfItems.innerHTML = ""
@@ -90,14 +78,16 @@ class Application {
 
     //Search country by the name
     searchItem() {
-        const request =  document.getElementById("search-input").value.toLowerCase()
+        const request = document.getElementById("search-input").value.toLowerCase()
         const renderItems = []
-        for(let key in this.countries.data) {
-            const country = this.countries.data[key].name.toLowerCase()
-            ~country.indexOf(request) && renderItems.push(this.countries.data[key])
+        for(const key in this.countries.data) {
+            if(~this.countries.data[key].name.toLowerCase().indexOf(request)) {
+                renderItems.push(this.countries.data[key])
+            }
         }
         this.countries.render(renderItems)
-        this.init()
+        this.showNumberOfItems(renderItems)
+        return renderItems
     }
 }
 
@@ -106,7 +96,6 @@ class List {
     constructor(domNode, options) {
         this.domNode = domNode
         this.data = Object.assign({}, options)
-        this.render(this.data)
     }
 
     //Render full list
@@ -114,32 +103,32 @@ class List {
         this.domNode.innerHTML = ""
         this.listRoot = document.createElement('ul')
         for(const key in data) {
-            this.addItem(data[key])
+            this.addItem(data[key], key)
         }
         this.domNode.appendChild(this.listRoot)
     }
 
     //Add item to the list
-    addItem(item) {
+    addItem(item, index) {
         const listItem = document.createElement("li")
         listItem.innerHTML = item.name
+        listItem.setAttribute("index", index)
         this.listRoot.appendChild(listItem)
     } 
     
     //Filter list items 
     filter(func) {
-        //args:className, action, domItem
-        // action === "remove" ? 
-        // domItem.classList.remove(className) :
-        // domItem.classList.add(className)
-
-
+        const filteredData = []
+        for(let key in this.data) {
+            if(func) {
+                filteredData.push(this.data[key])
+            }
+        }
+        return filteredData
     }
 }
 
 //DATA
-const countries = [{name:"Ukraine"}, {name:"Spain"}, {name:"USA"}, {name:"Italy"}, {name:"France"}, {name:"China"}]
-
 const cities = [{name:"Dnipro", country: "Ukraine"}, {name:"Kharkiv", country: "Ukraine"}, {name:"Kyjiw", country: "Ukraine"},
                 {name:"Madrid", country: "Spain"}, {name:"Barcelona", country: "Spain"}, {name:"Seville", country: "Spain"},
                 {name:"Atlanta", country: "USA"}, {name:"New York", country: "USA"}, {name:"Washington", country: "USA"}, {name:"Los Angeles", country: "USA"},
@@ -147,13 +136,13 @@ const cities = [{name:"Dnipro", country: "Ukraine"}, {name:"Kharkiv", country: "
                 {name:"Paris", country: "France"}, {name:"Nice", country: "France"}, {name:"Marseille", country: "France"}, {name:"Lyon", country: "France"}, {name:"Nantes", country: "France"}, {name:"Lille", country: "France"},
                 {name:"Guangzhou", country: "China"}, {name:"Shenzhen", country: "China"}, {name:"Tianjin", country: "China"}, {name:"Shanghai", country: "China"}]
 
+const countries = [{name:"Ukraine"}, {name:"Spain"}, {name:"USA"}, {name:"Italy"}, {name:"France"}, {name:"China"}]
+
 const citiesListDestination = document.getElementById('cities-list-container')
 const countriesListDestination = document.getElementById('list-container')
 
 const CitiesList = new List(citiesListDestination, cities)
 const CountriesList = new List(countriesListDestination, countries)
 const App = new Application()
-
-// CitiesList.render(cities.filter(city => city.country.match()))
 
 App.run(CountriesList, CitiesList)
