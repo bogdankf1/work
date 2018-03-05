@@ -1,3 +1,52 @@
+//выполнять AJAX-запросы на сервер, чтобы получать данные через API
+//при клике на каждый город делать AJAX запрос на сервер с заданной страной и получать соответствующие города
+//при клике на страну передавать индекс и по нему - соотв.страну
+//DATA
+let cities = []
+let countries = []
+
+const citiesListDestination = document.getElementById('cities-list-container')
+const countriesListDestination = document.getElementById('list-container')
+
+function loadCountries() {
+    const xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = (response) => {
+        countries = JSON.parse(response.currentTarget.response)
+        if (this.readyState === 4 && this.status === 200) {   
+            
+        }
+    }
+    xhttp.open("GET", "http://127.0.0.1:8080/api/country/list", true)
+    xhttp.send()
+}
+
+function loadCities() {
+    const xhttp = new XMLHttpRequest()
+    xhttp.onreadystatechange = (response) => {
+        cities = JSON.parse(response.currentTarget.response)
+        if (this.readyState === 4 && this.status === 200) {   
+            
+        }
+    }
+    //Spain заменять на необходимую страну
+    let url = "http://127.0.0.1:8080/api/city/list/" + "Spain"
+    xhttp.open("GET", url, true)
+    xhttp.send()
+}
+
+window.addEventListener("load", () => {
+    loadCountries()
+    loadCities()
+    setTimeout(() => {
+        console.log(countries)
+        console.log(cities)
+        const CitiesList = new List(citiesListDestination, cities)
+        const CountriesList = new List(countriesListDestination, countries)
+        const App = new Application()
+        App.run(CountriesList, CitiesList)
+    }, 100)
+})
+
 class Application {
     //Run application
     run(countries, cities) {
@@ -127,22 +176,3 @@ class List {
         return filteredData
     }
 }
-
-//DATA
-const cities = [{name:"Dnipro", country: "Ukraine"}, {name:"Kharkiv", country: "Ukraine"}, {name:"Kyjiw", country: "Ukraine"},
-                {name:"Madrid", country: "Spain"}, {name:"Barcelona", country: "Spain"}, {name:"Seville", country: "Spain"},
-                {name:"Atlanta", country: "USA"}, {name:"New York", country: "USA"}, {name:"Washington", country: "USA"}, {name:"Los Angeles", country: "USA"},
-                {name:"Rome", country: "Italy"}, {name:"Milan", country: "Italy"}, {name:"Florence", country: "Italy"}, {name:"Venice", country: "Italy"}, {name:"Turin", country: "Italy"},
-                {name:"Paris", country: "France"}, {name:"Nice", country: "France"}, {name:"Marseille", country: "France"}, {name:"Lyon", country: "France"}, {name:"Nantes", country: "France"}, {name:"Lille", country: "France"},
-                {name:"Guangzhou", country: "China"}, {name:"Shenzhen", country: "China"}, {name:"Tianjin", country: "China"}, {name:"Shanghai", country: "China"}]
-
-const countries = [{name:"Ukraine"}, {name:"Spain"}, {name:"USA"}, {name:"Italy"}, {name:"France"}, {name:"China"}]
-
-const citiesListDestination = document.getElementById('cities-list-container')
-const countriesListDestination = document.getElementById('list-container')
-
-const CitiesList = new List(citiesListDestination, cities)
-const CountriesList = new List(countriesListDestination, countries)
-const App = new Application()
-
-App.run(CountriesList, CitiesList)
