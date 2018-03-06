@@ -1,59 +1,14 @@
-//выполнять AJAX-запросы на сервер, чтобы получать данные через API
-//при клике на каждый город делать AJAX запрос на сервер с заданной страной и получать соответствующие города
-//при клике на страну передавать индекс и по нему - соотв.страну
-//DATA
-let cities = []
-let countries = []
-
-const citiesListDestination = document.getElementById('cities-list-container')
-const countriesListDestination = document.getElementById('list-container')
-
-function loadCountries() {
-    const xhttp = new XMLHttpRequest()
-    xhttp.onreadystatechange = (response) => {
-        countries = JSON.parse(response.currentTarget.response)
-        if (this.readyState === 4 && this.status === 200) {   
-            
-        }
-    }
-    xhttp.open("GET", "http://127.0.0.1:8080/api/country/list", true)
-    xhttp.send()
-}
-
-function loadCities() {
-    const xhttp = new XMLHttpRequest()
-    xhttp.onreadystatechange = (response) => {
-        cities = JSON.parse(response.currentTarget.response)
-        if (this.readyState === 4 && this.status === 200) {   
-            
-        }
-    }
-    //Spain заменять на необходимую страну
-    let url = "http://127.0.0.1:8080/api/city/list/" + "Spain"
-    xhttp.open("GET", url, true)
-    xhttp.send()
-}
-
-window.addEventListener("load", () => {
-    loadCountries()
-    loadCities()
-    setTimeout(() => {
-        console.log(countries)
-        console.log(cities)
-        const CitiesList = new List(citiesListDestination, cities)
-        const CountriesList = new List(countriesListDestination, countries)
-        const App = new Application()
-        App.run(CountriesList, CitiesList)
-    }, 100)
-})
-
+//Application class
 class Application {
     //Run application
     run(countries, cities) {
         this.countries = countries
         this.cities = cities
-        this.countries.render(this.countries.data)
-        this.init()
+        this.loadCountries()
+        setTimeout(() => {
+            this.countries.render(this.countries.data)
+            this.init()
+        })
     }
 
     //Initialize all handlers
@@ -62,6 +17,52 @@ class Application {
         this.bindAllItemsHandler()
         this.bindShowCitiesHandler()
         this.showNumberOfItems()
+    }
+
+    //Load countries from a server
+    loadCountries() {
+        const xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = (res) => {
+            if (xhr.readyState === 4 && xhr.status === 200) {   
+                this.countries.data = JSON.parse(res.currentTarget.response)
+            }
+        }
+        xhr.open("GET", "http://127.0.0.1:3000/api/country/list", true)
+        xhr.send()
+    }
+
+    //Load cities to selected country from a server
+    loadCities(countryName) {
+        const xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = (res) => {
+            if (xhr.readyState === 4 && xhr.status === 200) {   
+                this.cities.data = JSON.parse(res.currentTarget.response)
+            }
+        }
+        xhr.open("GET", `http://127.0.0.1:3000/api/city/list/${countryName}`, true)
+        xhr.send()
+    }
+
+    postCountry() {
+        const xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = (res) => {
+            if(xhr.readyState === 4 && xhr.status === 200) {
+                console.log(res.currentTarget.response)
+            }
+        }
+        xhr.open("POST", "http://127.0.0.1:3000/api/country", true)
+        xhr.send()
+    }
+
+    postCity() {
+        const xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = (res) => {
+            if(xhr.readyState === 4 && xhr.status === 200) {
+ 
+            }
+        }
+        xhr.open("POST", "http://127.0.0.1:3000/api/city", true)
+        xhr.send()
     }
 
     //Bind onsubmit handler to search form 
@@ -90,15 +91,15 @@ class Application {
     }
 
     //Handler on showmore click
-    onClickShowCities(index) {
+    onClickShowCities(index) { 
+        // setTimeout(() => {
+        //     this.postCountry() 
+        // }, 1000);   
         const receivedCountries = this.searchItem() || this.countries.data
-        const renderItems = []
-        for(const key in this.cities.data) {
-            if(receivedCountries[index].name === this.cities.data[key].country) {
-                renderItems.push(this.cities.data[key])
-            }
-        }
-        this.cities.render(renderItems)
+        this.loadCities(receivedCountries[index].name)
+        setTimeout(() => {
+            this.cities.render(this.cities.data)
+        }, 100)
     }
 
     //Validate form to enter correct values
@@ -140,6 +141,7 @@ class Application {
     }
 }
 
+//List class
 class List {
     //Constructor
     constructor(domNode, options) {
@@ -176,3 +178,19 @@ class List {
         return filteredData
     }
 }
+
+//DATA
+let cities = []
+let countries = []
+
+//Destination points
+const citiesListDestination = document.getElementById('cities-list-container')
+const countriesListDestination = document.getElementById('list-container')
+
+//Create examples of classes 
+const CitiesList = new List(citiesListDestination, cities)
+const CountriesList = new List(countriesListDestination, countries)
+const App = new Application()
+
+//Run application
+App.run(CountriesList, CitiesList)
