@@ -11,8 +11,8 @@ const countries = JSON.parse(fs.readFileSync('countries.json'))
 
 const sendCities = (request) => {
     let response = [], 
-            url = request.url.split("/"),
-            requestedCountry = url[url.length - 1]
+        url = request.url.split("/"),
+        requestedCountry = url[url.length - 1]
     cities.forEach((item) => {
         item.country === requestedCountry && response.push(item)
     })
@@ -31,7 +31,8 @@ const server = http.createServer((request, response) => {
         //Return list of cities in requested country
         response.end(JSON.stringify(sendCities(request)))
     } else if(~request.url.indexOf("/api/country") && request.method === "POST") {
-        // response.end(JSON.stringify(countries))
+        // response.end(JSON.stringify("Response on test request"))
+        // console.log(request)
     } else if(~request.url.indexOf("/api/city") && request.method === "POST") {
 
     } else {

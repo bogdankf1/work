@@ -1,3 +1,7 @@
+//не использовать XMLHttpRequest
+//использовать промисы, которые поддерживаются Fetch API
+//не использовать setTimeout!!!
+
 //Application class
 class Application {
     //Run application
@@ -51,7 +55,7 @@ class Application {
             }
         }
         xhr.open("POST", "http://127.0.0.1:3000/api/country", true)
-        xhr.send()
+        xhr.send("foo=bar&lorem=ipsum")
     }
 
     postCity() {
@@ -91,10 +95,12 @@ class Application {
     }
 
     //Handler on showmore click
-    onClickShowCities(index) { 
-        // setTimeout(() => {
-        //     this.postCountry() 
-        // }, 1000);   
+    onClickShowCities(index) {
+        //так не делать!! 
+        setTimeout(() => {
+            this.postCountry() 
+        }, 1000);  
+        // 
         const receivedCountries = this.searchItem() || this.countries.data
         this.loadCities(receivedCountries[index].name)
         setTimeout(() => {
