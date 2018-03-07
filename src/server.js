@@ -1,3 +1,4 @@
+//Require needed modules
 const http = require('http')
 const fs = require('fs')
 
@@ -9,6 +10,7 @@ const port = 3000
 const cities = JSON.parse(fs.readFileSync('cities.json'))
 const countries = JSON.parse(fs.readFileSync('countries.json'))
 
+//Create array of cities by the requested country
 const sendCities = (request) => {
     let response = [], 
         url = request.url.split("/"),
@@ -19,6 +21,7 @@ const sendCities = (request) => {
     return response
 }
 
+//Receive all data from the post request
 const getPostData = (request, response) => {
     let receivedData = ""
     request.on("data", (chunk) => {
@@ -53,45 +56,3 @@ const server = http.createServer((request, response) => {
 server.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}`)
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const express = require('express')
-// const bodyParser = require('body-parser')
-
-// const app = express()
-
-// app.use(bodyParser.json())
-
-// app.get('/api/country/list', (request, response) => {
-//     response.setHeader('Access-Control-Allow-Origin', '*')
-//     response.end(JSON.stringify(countries))
-// })
-// app.get('/api/city/list/', (request, response) => {
-//     response.setHeader('Access-Control-Allow-Origin', '*')
-//     response.end(JSON.stringify(sendCities(request)))
-// })
-
-// app.post('/api/country', (request, response) => {
-//     response.setHeader('Access-Control-Allow-Origin', '*')
-//     response.end(JSON.stringify("Response on test request"))
-// })
-// app.post('/api/city', (request, response) => {
-//     response.setHeader('Access-Control-Allow-Origin', '*')
-//     response.end(JSON.stringify(request.body))
-// })
-
-// app.listen(port, () => {
-//     console.log(`Express server listening on http://localhost:${port}`)
-// })

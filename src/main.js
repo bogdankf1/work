@@ -1,3 +1,7 @@
+//edit preloader details
+//replace node with express
+//try to use post requests with search form
+
 //Application class
 class Application {
     //Run application
@@ -17,21 +21,27 @@ class Application {
 
     //Load countries from a server
     loadCountries() {
+        this.togglePreloader()
         fetch("http://127.0.0.1:3000/api/country/list")
             .then(response => response.json())
             .then(jsonData => this.countries.data = jsonData)
             .then(() => {
                 this.countries.render(this.countries.data)
                 this.init()
+                this.togglePreloader()
             })
     }
 
     //Load cities to selected country from a server
     loadCities(countryName) {
+        this.togglePreloader()
         fetch(`http://127.0.0.1:3000/api/city/list/${countryName}`)
             .then(response => response.json())
             .then(jsonData => this.cities.data = jsonData)
-            .then(() => this.cities.render(this.cities.data))
+            .then(() => {
+                this.cities.render(this.cities.data)
+                this.togglePreloader()
+            })
     }
 
     postCountry() {
@@ -50,6 +60,14 @@ class Application {
             })
             .then(response => response.json())
             .then(jsonData => console.log(jsonData))
+    }
+
+    //toggle preloader
+    togglePreloader() {
+        const preloader = document.getElementById("preloader")
+        preloader.classList.contains("hide") ? 
+        preloader.classList.remove("hide") :
+        preloader.classList.add("hide")
     }
 
     //Bind onsubmit handler to search form 
