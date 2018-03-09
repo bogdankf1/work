@@ -1,6 +1,5 @@
-//edit preloader details
-//replace node with express
-//try to use post requests with search form
+//get familiar with middleware and it's usage in node js
+//middleware - array of async callbacks
 
 //Application class
 class Application {
@@ -21,29 +20,30 @@ class Application {
 
     //Load countries from a server
     loadCountries() {
-        this.togglePreloader()
+        this.showPreloader()
         fetch("http://127.0.0.1:3000/api/country/list")
             .then(response => response.json())
             .then(jsonData => this.countries.data = jsonData)
             .then(() => {
                 this.countries.render(this.countries.data)
                 this.init()
-                this.togglePreloader()
+                this.hidePreloader()
             })
     }
 
     //Load cities to selected country from a server
     loadCities(countryName) {
-        this.togglePreloader()
+        this.showPreloader()
         fetch(`http://127.0.0.1:3000/api/city/list/${countryName}`)
             .then(response => response.json())
             .then(jsonData => this.cities.data = jsonData)
             .then(() => {
                 this.cities.render(this.cities.data)
-                this.togglePreloader()
+                this.hidePreloader()
             })
     }
 
+    //Post country to a server
     postCountry() {
         fetch("http://127.0.0.1:3000/api/country", {
             body: JSON.stringify({"postCountry":111}),
@@ -53,6 +53,7 @@ class Application {
             .then(jsonData => console.log(jsonData))
     }
 
+    //Post city to a server
     postCity() {
         fetch("http://127.0.0.1:3000/api/city", {
             body: JSON.stringify({"postCity":222}),
@@ -62,12 +63,14 @@ class Application {
             .then(jsonData => console.log(jsonData))
     }
 
-    //toggle preloader
-    togglePreloader() {
-        const preloader = document.getElementById("preloader")
-        preloader.classList.contains("hide") ? 
-        preloader.classList.remove("hide") :
-        preloader.classList.add("hide")
+    //show preloader
+    showPreloader() {
+        document.getElementById("preloader").classList.remove("hide")
+    }
+
+    //hide preloader
+    hidePreloader() {
+        document.getElementById("preloader").classList.add("hide")
     }
 
     //Bind onsubmit handler to search form 
@@ -91,13 +94,16 @@ class Application {
     //Bind on click handler to show cities
     bindShowCitiesHandler() {
         document.getElementById("list-container").addEventListener("click", (e) => {
-            e.target.tagName === "LI" && this.onClickShowCities(e.target.getAttribute("index"))
+            e.target.tagName === "LI" && this.onClickShowCities(e.target.getAttribute("index"), e)
         })
     }
 
     //Handler on showmore click
     onClickShowCities(index) {
-        const receivedCountries = this.searchItem() || this.countries.data
+        const receivedCountries = this.searchItem()
+        receivedCountries.forEach((item) => item.selected = false)
+        receivedCountries[index].selected = true
+        this.countries.render(receivedCountries)
         this.loadCities(receivedCountries[index].name)
     }
 
@@ -126,7 +132,7 @@ class Application {
     }
 
     //Search country by the name
-    searchItem() {
+    searchItem(e) {
         const request = document.getElementById("search-input").value.toLowerCase()
         const renderItems = []
         for(const key in this.countries.data) {
@@ -134,7 +140,7 @@ class Application {
                 renderItems.push(this.countries.data[key])
             }
         }
-        this.countries.render(renderItems)
+        request === "" ? "" : this.countries.render(renderItems)
         this.showNumberOfItems(renderItems)
         return renderItems
     }
@@ -162,6 +168,7 @@ class List {
     addItem(item, index) {
         const listItem = document.createElement("li")
         listItem.innerHTML = item.name
+        item.hasOwnProperty("selected") && item.selected === true ? listItem.classList.add("selected") : ""
         listItem.setAttribute("index", index)
         this.listRoot.appendChild(listItem)
     } 
