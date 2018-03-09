@@ -1,5 +1,7 @@
 //get familiar with middleware and it's usage in node js
 //middleware - array of async callbacks
+//try to change server to Koa.js
+
 
 //Application class
 class Application {

@@ -41,14 +41,6 @@ const getPostData = (request, response) => {
 //     }
 // }
 
-// //Middlewares
-// const middlewareCountryList = (req, res, next) => {
-//     if(matchUrl(req, "/api/country/list", "GET")) {
-
-//     }
-//     res.end(data)
-// }
-
 // const getCountryList = (req, res, next) => {
 //     JSON.stringify(countries)
 //         sendCountryList(data)
@@ -108,6 +100,23 @@ const getPostData = (request, response) => {
 //     console.log(`Server running at http://${hostname}:${port}`)
 // })
 
+//Middlewares
+const middlewareCountryList = (req, res, next) => {
+    
+}
+
+const middlewareCityList = (req, res, next) => {
+    
+}
+
+const middlewarePostCountry = (req, res, next) => {
+    
+}
+
+const middlewarePostCity = (req, res, next) => {
+    
+}
+
 app.get('/api/country/list', (request, response) => {
     response.setHeader('Access-Control-Allow-Origin', '*')
     response.end(JSON.stringify(countries))
@@ -127,5 +136,5 @@ app.post('/api/city', (request, response) => {
 })
 
 app.listen(port, () => {
-    console.log(`Express server listening on http://localhost:${port}`)
+    console.log(`Express server listening on http://${hostname}:${port}`)
 })
