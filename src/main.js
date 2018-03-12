@@ -1,8 +1,3 @@
-//change server to Koa.js
-//cors middleware instead of "Allow request ..."
-//body-parser middleware instead of receivePostData()
-//request.params middleware instead of matchCities() 
-
 //Application class
 class Application {
     //Run application
@@ -35,6 +30,7 @@ class Application {
 
     //Load cities to selected country from a server
     loadCities(countryName) {
+        this.postCity()
         this.showPreloader()
         fetch(`http://127.0.0.1:3000/api/city/list/${countryName}`)
             .then(response => response.json())
@@ -58,10 +54,10 @@ class Application {
     //Post city to a server
     postCity() {
         fetch("http://127.0.0.1:3000/api/city", {
-            body: JSON.stringify({"postCity":222}),
+            body: {"postCity":222},
             method: "POST"
             })
-            .then(response => response.json())
+            .then(response => console.log(response))
             .then(jsonData => console.log(jsonData))
     }
 

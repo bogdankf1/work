@@ -1,10 +1,15 @@
 //Require needed modules
-const http = require('http')
 const fs = require('fs')
-const express = require('express')
+const Koa = require('koa')
+const Router = require('koa-router')
+const cors = require('koa2-cors')
+const bodyParser = require('koa-bodyparser')
 
-//Create express application
-const app = express()
+//Create Koa application
+const app = new Koa()
+
+//Create Koa router
+const router = new Router()
 
 //Set server hostname and port 
 const hostname = '127.0.0.1'
@@ -16,63 +21,61 @@ const countries = JSON.parse(fs.readFileSync('countries.json'))
 
 //MIDDLEWARES
 //Logger
-const middlewareLogger = (req, res, next) => {
-    console.log(`Request: ${req.method} ${req.url}`)
-    next()
-}
+const middlewareLogger = (async (ctx, next) => {
+    console.log(`Request: ${ctx.method} ${ctx.url}`)
+    await next()
+})
 
 //Create array of cities by the requested country
-const matchCities = (req, res, next) => {
-    let response = [], 
-        url = req.url.split("/"),
-        requestedCountry = url[url.length - 1]
-    cities.forEach((item) => {
-        item.country === requestedCountry && response.push(item)
+const matchCities = (async (ctx, next) => {
+    let response = []
+    cities.forEach(item => {
+        item.country === ctx.params.countryName && response.push(item)
     })
-    req.jsonData = response
-    next()
-}
+    ctx.jsonData = response
+    await next()
+})
 
 //Receive all data from the post request
-const receivePostData = (req, res, next) => {
+const receivePostData = (async (ctx, next) => {
     let receivedData = ""
-    req.on("data", (chunk) => {
-        receivedData += chunk.toString()
-    })
-    req.postData = receivedData
-    next()
-}
+    ctx.req.on("data", chunk => { receivedData += chunk.toString() })
+    ctx.postData = receivedData
+    await next()
+})
 
 //HANDLERS
-const getCitiesHandler = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.end(JSON.stringify(req.jsonData))
-}
+const getCitiesHandler = (async ctx => {
+    ctx.body = JSON.stringify(ctx.jsonData)
+})
 
-const getCountriesHandler = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.end(JSON.stringify(countries))
-}
+const getCountriesHandler = (async ctx => {
+    ctx.body = JSON.stringify(countries)
+})
 
-const postCountriesHandler = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.end(JSON.stringify(req.postData))
-}
+const postCountriesHandler = (async ctx => {
+    ctx.body = JSON.stringify(ctx.request.body)
+})
 
-const postCitiesHandler = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.end(JSON.stringify(req.postData))
-}
+const postCitiesHandler = (async ctx => {
+    ctx.body = JSON.stringify(ctx.request.body)
+    console.log(ctx.body)
+})
 
 //GET requests
-app.get('/api/country/list', [middlewareLogger], getCountriesHandler)
-app.get('/api/city/list/[A-Za-z]+', [middlewareLogger, matchCities], getCitiesHandler)
+router.get('/api/country/list', middlewareLogger, getCountriesHandler)
+router.get('/api/city/list/:countryName', middlewareLogger, matchCities, getCitiesHandler)
 
 //POST requests
-app.post('/api/country', [middlewareLogger, receivePostData], postCountriesHandler)
-app.post('/api/city', [middlewareLogger, receivePostData], postCitiesHandler)
+router.post('/api/country', middlewareLogger, postCountriesHandler)
+router.post('/api/city', middlewareLogger, postCitiesHandler)
+
+//Use middlewares
+app.use(cors())
+app.use(bodyParser())
+app.use(router.routes())
 
 //Listen server
 app.listen(port, () => {
-    console.log(`Express server listening on http://${hostname}:${port}`)
+    console.log(`Koa server listening on http://${hostname}:${port}`)
 })
