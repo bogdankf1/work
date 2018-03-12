@@ -1,7 +1,7 @@
-//get familiar with middleware and it's usage in node js
-//middleware - array of async callbacks
-//try to change server to Koa.js
-
+//change server to Koa.js
+//cors middleware instead of "Allow request ..."
+//body-parser middleware instead of receivePostData()
+//request.params middleware instead of matchCities() 
 
 //Application class
 class Application {

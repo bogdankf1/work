@@ -3,6 +3,7 @@ const http = require('http')
 const fs = require('fs')
 const express = require('express')
 
+//Create express application
 const app = express()
 
 //Set server hostname and port 
@@ -13,128 +14,65 @@ const port = 3000
 const cities = JSON.parse(fs.readFileSync('cities.json'))
 const countries = JSON.parse(fs.readFileSync('countries.json'))
 
+//MIDDLEWARES
+//Logger
+const middlewareLogger = (req, res, next) => {
+    console.log(`Request: ${req.method} ${req.url}`)
+    next()
+}
+
 //Create array of cities by the requested country
-const matchCities = (request) => {
+const matchCities = (req, res, next) => {
     let response = [], 
-        url = request.url.split("/"),
+        url = req.url.split("/"),
         requestedCountry = url[url.length - 1]
     cities.forEach((item) => {
         item.country === requestedCountry && response.push(item)
     })
-    return response
+    req.jsonData = response
+    next()
 }
 
 //Receive all data from the post request
-const getPostData = (request, response) => {
+const receivePostData = (req, res, next) => {
     let receivedData = ""
-    request.on("data", (chunk) => {
+    req.on("data", (chunk) => {
         receivedData += chunk.toString()
     })
-    return receivedData
+    req.postData = receivedData
+    next()
 }
 
-// const matchUrl = (req, expectedUrl, expectedMethod) => {
-//     if(req.url.indexOf(expectedUrl) === -1 || req.method !== expectedMethod) {
-//         return false
-//     } else {
-//         return true
-//     }
-// }
-
-// const getCountryList = (req, res, next) => {
-//     JSON.stringify(countries)
-//         sendCountryList(data)
-//     next()
-// }
-
-// const getCityList = (req, res, next) => {
-//     if(req.url.indexOf("/api/city/list") === -1 || req.method !== "GET") {
-//         return
-//     }
-//     matchCities(req)
-//     .then((data) => {
-//         res.end(JSON.stringify(data))
-//     })
-
-//     // next()
-// }
-
-// const postCountry = (req, res, next) => {
-//     getPostData(req, res)
-//     .then((data) => {
-//         res.end(JSON.stringify(data))
-//     })
-
-//     next()
-// }
-
-// const postCity = (req, res, next) => {
-//     getPostData(req, res)
-//     .then((data) => {
-//         res.end(JSON.stringify(data))
-//     })
-// }
-
-//Create server and set API responses
-// const server = http.createServer((request, response) => {
-//     response.setHeader('Access-Control-Allow-Origin', '*')
-
-    
-//     const url = request.url,
-//           method = request.method
-//     if(url.indexOf("/api/country/list") !== -1 && method === "GET") {
-//         response.end(JSON.stringify(countries))
-//     } else if(url.indexOf("/api/city/list") !== -1 && method === "GET") {
-//         response.end(JSON.stringify(matchCities(request)))
-//     } else if(url.indexOf("/api/country") !== -1 && method === "POST") {
-//         response.end(JSON.stringify(getPostData(request)))
-//     } else if(url.indexOf("/api/city") !== -1 && method === "POST") {
-//         response.end(JSON.stringify(getPostData(request)))
-//     } else {
-//         console.log("Invalid API request!")
-//     }
-// })
-
-// //Listen the server on current hostname and port
-// server.listen(port, hostname, () => {
-//     console.log(`Server running at http://${hostname}:${port}`)
-// })
-
-//Middlewares
-const middlewareCountryList = (req, res, next) => {
-    
+//HANDLERS
+const getCitiesHandler = (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.end(JSON.stringify(req.jsonData))
 }
 
-const middlewareCityList = (req, res, next) => {
-    
+const getCountriesHandler = (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.end(JSON.stringify(countries))
 }
 
-const middlewarePostCountry = (req, res, next) => {
-    
+const postCountriesHandler = (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.end(JSON.stringify(req.postData))
 }
 
-const middlewarePostCity = (req, res, next) => {
-    
+const postCitiesHandler = (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.end(JSON.stringify(req.postData))
 }
 
-app.get('/api/country/list', (request, response) => {
-    response.setHeader('Access-Control-Allow-Origin', '*')
-    response.end(JSON.stringify(countries))
-})
-app.get('/api/city/list/[A-Za-z]+', (request, response) => {
-    response.setHeader('Access-Control-Allow-Origin', '*')
-    response.end(JSON.stringify(matchCities(request)))
-})
+//GET requests
+app.get('/api/country/list', [middlewareLogger], getCountriesHandler)
+app.get('/api/city/list/[A-Za-z]+', [middlewareLogger, matchCities], getCitiesHandler)
 
-app.post('/api/country', (request, response) => {
-    response.setHeader('Access-Control-Allow-Origin', '*')
-    response.end(JSON.stringify(getPostData(request)))
-})
-app.post('/api/city', (request, response) => {
-    response.setHeader('Access-Control-Allow-Origin', '*')
-    response.end(JSON.stringify(getPostData(request)))
-})
+//POST requests
+app.post('/api/country', [middlewareLogger, receivePostData], postCountriesHandler)
+app.post('/api/city', [middlewareLogger, receivePostData], postCitiesHandler)
 
+//Listen server
 app.listen(port, () => {
     console.log(`Express server listening on http://${hostname}:${port}`)
 })
