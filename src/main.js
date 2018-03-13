@@ -5,6 +5,8 @@ class Application {
         this.countries = countries
         this.cities = cities
         this.loadCountries()
+
+        this.postCity()
     }
 
     //Initialize all handlers
@@ -30,7 +32,6 @@ class Application {
 
     //Load cities to selected country from a server
     loadCities(countryName) {
-        this.postCity()
         this.showPreloader()
         fetch(`http://127.0.0.1:3000/api/city/list/${countryName}`)
             .then(response => response.json())
@@ -54,10 +55,13 @@ class Application {
     //Post city to a server
     postCity() {
         fetch("http://127.0.0.1:3000/api/city", {
-            body: {"postCity":222},
+            body: JSON.stringify({"postCity":222}),
+            headers: {
+                "Content-Type": "application/json" // important(!)
+            },
             method: "POST"
             })
-            .then(response => console.log(response))
+            .then(response => response.json())
             .then(jsonData => console.log(jsonData))
     }
 

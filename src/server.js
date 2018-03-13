@@ -1,9 +1,9 @@
 //Require needed modules
-const fs = require('fs')
-const Koa = require('koa')
-const Router = require('koa-router')
-const cors = require('koa2-cors')
-const bodyParser = require('koa-bodyparser')
+const Koa = require('koa'),
+      Router = require('koa-router'),
+      cors = require('koa2-cors'),
+      bodyParser = require('koa-bodyparser'),
+      mongo = require('mongodb')
 
 //Create Koa application
 const app = new Koa()
@@ -12,12 +12,44 @@ const app = new Koa()
 const router = new Router()
 
 //Set server hostname and port 
-const hostname = '127.0.0.1'
-const port = 3000
+const hostname = '127.0.0.1',
+      port = 3000,
+      dbPort = 27017,
+      dbName = "myApp"
 
 //Get data from .json files
-const cities = JSON.parse(fs.readFileSync('cities.json'))
-const countries = JSON.parse(fs.readFileSync('countries.json'))
+let cities = [],
+    countries = []
+
+//Fetch countries from the database
+const fetchCountriesFromDB = () => {
+    mongo.connect(`mongodb://${hostname}:${dbPort}`, (err, client) => {
+        console.log(`Connected to MongoDB on mongodb://${hostname}:${dbPort}`)
+        const db = client.db(dbName),
+              collection = db.collection('countries')
+        collection.find({}).toArray(async(err, result) => {
+            countries = await result
+            client.close()
+        })
+    })
+}
+
+//Fetch cities from the database
+const fetchCitiesFromDB = (countryName) => {
+    mongo.connect(`mongodb://${hostname}:${dbPort}/${countryName}`, (err, client) => {
+        console.log(`mongodb://${hostname}:${dbPort}/:${countryName}`)
+        console.log(`Connected to MongoDB on mongodb://${hostname}:${dbPort}`)
+        const db = client.db("myApp"),
+              collection = db.collection('cities')
+        collection.find({}).toArray(async (err, result) => {
+            cities = await result
+            client.close()
+        })
+    })
+}
+
+fetchCountriesFromDB()
+fetchCitiesFromDB()
 
 //MIDDLEWARES
 //Logger
@@ -36,14 +68,6 @@ const matchCities = (async (ctx, next) => {
     await next()
 })
 
-//Receive all data from the post request
-const receivePostData = (async (ctx, next) => {
-    let receivedData = ""
-    ctx.req.on("data", chunk => { receivedData += chunk.toString() })
-    ctx.postData = receivedData
-    await next()
-})
-
 //HANDLERS
 const getCitiesHandler = (async ctx => {
     ctx.body = JSON.stringify(ctx.jsonData)
@@ -59,18 +83,18 @@ const postCountriesHandler = (async ctx => {
 
 const postCitiesHandler = (async ctx => {
     ctx.body = JSON.stringify(ctx.request.body)
-    console.log(ctx.body)
 })
 
 //GET requests
-router.get('/api/country/list', middlewareLogger, getCountriesHandler)
-router.get('/api/city/list/:countryName', middlewareLogger, matchCities, getCitiesHandler)
+router.get('/api/country/list', getCountriesHandler)
+router.get('/api/city/list/:countryName', matchCities, getCitiesHandler)
 
 //POST requests
-router.post('/api/country', middlewareLogger, postCountriesHandler)
-router.post('/api/city', middlewareLogger, postCitiesHandler)
+router.post('/api/country', postCountriesHandler)
+router.post('/api/city', postCitiesHandler)
 
 //Use middlewares
+app.use(middlewareLogger)
 app.use(cors())
 app.use(bodyParser())
 app.use(router.routes())
