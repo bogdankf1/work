@@ -1,3 +1,8 @@
+//Cities for each country should been uploaded separately
+//fix wrong fetching
+//separate code to different files ( handlers, mongo, etc)
+//getConnection()
+
 //Require needed modules
 const Koa = require('koa'),
       Router = require('koa-router'),
@@ -38,13 +43,14 @@ const fetchCountriesFromDB = client => {
 }
 
 //Fetch cities from the database
-const fetchCitiesFromDB = (client, countryName) => {
+const fetchCitiesFromDB = async (client, countryName) => {
     const db = client.db(dbName),
             collection = db.collection('cities')
     collection.find({country:countryName}).toArray(async (err, result) => {
         cities = await result
         console.log(cities)
     })
+    return await cities
 }
 
 //MIDDLEWARES
@@ -55,8 +61,12 @@ const middlewareLogger = async (ctx, next) => {
 }
 
 //HANDLERS
-const getCitiesHandler = ctx => {
-    ctx.body = JSON.stringify(cities)
+const getCitiesHandler = async ctx => {
+    const client = await connect()
+    const country = await ctx.params.countryName
+    const fetchedCities = await fetchCitiesFromDB(client, country)
+    console.log("fetchedcities:", fetchedCities)
+    ctx.body = JSON.stringify(fetchedCities)
 }
 
 const getCountriesHandler = ctx => {
