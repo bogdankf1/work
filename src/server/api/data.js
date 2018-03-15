@@ -1,3 +1,4 @@
+//Arrays which store data received from database 
 let cities = [],
     countries = []
     
