@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/main.css">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+</head>
+<body>
+    <!-- Preloader -->
+    <div class="preloader-wrapper big active hide" id="preloader">
+        <div class="spinner-layer spinner-blue-only">
+            <div class="circle-clipper left">
+            <div class="circle"></div>
+            </div><div class="gap-patch">
+            <div class="circle"></div>
+            </div><div class="circle-clipper right">
+            <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+    <!-- App container -->
+    <div class="app">
+        <!-- Container of header, countries list and filter buttons -->
+        <div class="main-content">
+            <!-- Header with title and search form -->
+            <div id="header">
+                <!-- Title -->
+                <h1>Country List</h1>
+                <!-- Search form -->
+                <div>
+                    <form id="search-form">
+                        <input id="search-input" type="text" placeholder="Which country do you want to search?">
+                        <input type="submit" style="position: absolute; left: -9999px"/>
+                    </form>
+                </div>
+            </div>
+            <!-- Container of countries list -->
+            <div id="list-container"></div>
+            <!-- 'All' button and 'Number of items' -->
+            <div class="filter-buttons">
+                <hr>
+                <div id="all">All</div>
+                <div id="number-of-items"></div>
+            </div>
+        </div>
+        <!-- Container of cities list -->
+        <div id="cities-list-container"></div>
+    </div>
+    <script src="src/client/main.js"></script>
+</body>
+</html>

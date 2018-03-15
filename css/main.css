@@ -1,0 +1,84 @@
+.app {
+    width: 800px;
+    margin: 0 auto;
+    font-size: 200%;
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-template-rows: auto;
+    grid-template-areas: "main-content" "cities";
+}
+
+#cities-list-container {
+    grid-area: "cities";
+}
+#main-content {
+    grid-area: "main-list";
+}
+
+#list-container > ul > li {
+    cursor: pointer;
+    width: 400px;
+    border-bottom: solid black 1px;
+    overflow-x: hidden;
+}
+
+#list-container > ul > li:hover {
+    background-color: rgba(0, 0, 0, 0.164);
+}
+
+.showmore-btn {
+    float: right;
+}
+
+.showmore-btn:hover {
+    cursor: pointer;
+}
+
+#all, #completed, #active, #search {
+    font-size: 0.6em;
+    display: inline-block;
+}
+#all:hover, #completed:hover, #active:hover, #search:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#number-of-items {
+    font-weight: bold;
+    font-size:1em;
+    text-align:right;
+}
+
+.hide {
+    display:none;
+}
+.change-color {
+    color:red;
+}
+
+#cities-list-container {
+    margin-top: 200px;
+    margin-left: 50px;
+}
+
+#cities-list-container h4 {
+    font-weight:500; 
+}
+
+#cities-list-container > ul > li {
+    border-bottom: 1px solid rgb(0, 0, 0);
+}
+
+input::-webkit-input-placeholder { 
+    color: rgba(0, 0, 0, 0.774); 
+}
+
+#preloader {
+    position: absolute;
+    top: 50%;
+    left: 47%;
+}
+
+.selected {
+    background-color:rgba(0, 0, 0, 0.164);
+}
