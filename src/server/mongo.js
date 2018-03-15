@@ -1,11 +1,15 @@
 const db = null
 
-export const connect = async () => {
+const connect = async () => {
     if(!db) {
        
     }
-
+    
+    console.log("connectTo")
     return db
 }
 
-export const getConnection = () => db
+const getConnection = () => db
+
+module.exports.connect = connect
+module.exports.getConnection = getConnection

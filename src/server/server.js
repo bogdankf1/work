@@ -1,15 +1,17 @@
-//Cities for each country should been uploaded separately
-//fix wrong fetching
-//separate code to different files ( handlers, mongo, etc)
-//getConnection()
+//проблема с асинхронностью - города возвращаются не в том порядке
+//модули - require/module.exports vs import/export + что туда раскидать
 
 //Require needed modules
 const Koa = require('koa'),
       Router = require('koa-router'),
       cors = require('koa2-cors'),
       bodyParser = require('koa-bodyparser'),
-      mongo = require('mongodb')
-    //   getConnection = require('./mongo.js')
+      mongo = require('mongodb'),
+      connection = require('./mongo.js'),
+      data = require('./api/data.js'),
+      cityActions = require('./api/city/city-actions.js'),
+      countryActions = require('./api/country/country-actions.js'),
+      middlewares = require('./api/middlewares.js')
 
 //Create Koa application
 const app = new Koa()
@@ -23,11 +25,8 @@ const hostname = '127.0.0.1',
       dbPort = 27017,
       dbName = "myApp"
 
-//Get data from .json files
-let cities = [],
-    countries = []
-
 const connect = async () => {
+    console.log("connect")
     const client = await mongo.connect(`mongodb://${hostname}:${dbPort}`)
     return client
 }
@@ -37,71 +36,45 @@ const fetchCountriesFromDB = client => {
     const db = client.db(dbName),
           collection = db.collection('countries')
     collection.find({}).toArray(async (err, result) => {
-        countries = await result
-        console.log(countries)
+        data.countries = await result
+        console.log("fetchCountries")
     })
 }
 
 //Fetch cities from the database
 const fetchCitiesFromDB = async (client, countryName) => {
     const db = client.db(dbName),
-            collection = db.collection('cities')
+          collection = db.collection('cities')
     collection.find({country:countryName}).toArray(async (err, result) => {
-        cities = await result
-        console.log(cities)
+        data.cities = await result
+        console.log("fetchCities")
     })
-    return await cities
-}
-
-//MIDDLEWARES
-//Logger
-const middlewareLogger = async (ctx, next) => {
-    console.log(`Request: ${ctx.method} ${ctx.url}`)
-    await next()
-}
-
-//HANDLERS
-const getCitiesHandler = async ctx => {
-    const client = await connect()
-    const country = await ctx.params.countryName
-    const fetchedCities = await fetchCitiesFromDB(client, country)
-    console.log("fetchedcities:", fetchedCities)
-    ctx.body = JSON.stringify(fetchedCities)
-}
-
-const getCountriesHandler = ctx => {
-    ctx.body = JSON.stringify(countries)
-}
-
-const postCountriesHandler = ctx => {
-    ctx.body = JSON.stringify(ctx.request.body)
-}
-
-const postCitiesHandler = ctx => {
-    ctx.body = JSON.stringify(ctx.request.body)
 }
 
 //GET requests
-router.get('/api/country/list', getCountriesHandler)
-router.get('/api/city/list/:countryName', getCitiesHandler)
+router.get('/api/country/list', countryActions.getCountriesHandler)
+router.get('/api/city/list/:countryName', cityActions.getCitiesHandler)
 
 //POST requests
-router.post('/api/country', postCountriesHandler)
-router.post('/api/city', postCitiesHandler)
+router.post('/api/country', countryActions.postCountriesHandler)
+router.post('/api/city', cityActions.postCitiesHandler)
 
 //Use middlewares
-app.use(middlewareLogger)
+app.use(middlewares.middlewareLogger)
 app.use(cors())
 app.use(bodyParser())
 app.use(router.routes())
 
-//Init server and make connections 
+//Initialize server and make connections 
 const init = async () => {
     const client = await connect()
     fetchCountriesFromDB(client)
+    
+    //test launch
+    fetchCitiesFromDB(client, "USA")
 }
 
-//Run server
+//Run method
 const run = async () => {
     await init()
     //Listen server
